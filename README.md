@@ -34,6 +34,7 @@ halt.clear();
 
 Version 2 (coming soon)
 -------
+Currently, when execution is forcefully terminated using TerminateExecution(), an uncatchable exception is generated.
 In case you have sensible code and you want to recover the exception and catch it, you can use
 ```javascript
 halt.protect(goFetchSomeMilk);
