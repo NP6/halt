@@ -38,6 +38,27 @@ In case you have sensible code and you want to recover the exception and catch i
 ```javascript
 halt.protect(goFetchSomeMilk);
 ```
+example : 
+```javascript
+myMilk = goFetchSomeMilk(){
+halt.start(50);
+/*...*/;
+halt.stop();
+}
+
+try{
+halt.Start(50);
+try{
+halt.protect(myMilk);
+}
+catch(){
+/* What ever you want */
+}
+halt.clear();
+}
+
+
+```
 
 License
 -------
