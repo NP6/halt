@@ -32,14 +32,15 @@ goFetchSomeMilk();
 halt.clear();
 ```
 
-In case you have sensible code that needs to recover -- IL faudrait preciser ca -- 
-you can use
+Version 2 (à venir)
+-------
+In case you have sensible code and you want to recover the exception and catch it, you can use
 ```javascript
 halt.protect(goFetchSomeMilk);
 ```
 
 License
 -------
-![alt tag](https://licensebuttons.net/l/by/3.0/88x31.png)
+![alt cc](https://licensebuttons.net/l/by/3.0/88x31.png)
 This work is licensed under a [Creative Commons Attribution 4.0 International License] (http://creativecommons.org/licenses/by/4.0/)
 
