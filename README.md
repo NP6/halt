@@ -39,8 +39,9 @@ In case you have sensible code and you want to recover the exception and catch i
 ```javascript
 halt.protect(goFetchSomeMilk);
 ```
-example : 
+Example : 
 ```javascript
+var halt = require('halt')
 myMilk = goFetchSomeMilk(){
     halt.start(50);
     /*...*/;
