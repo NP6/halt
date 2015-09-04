@@ -1,7 +1,7 @@
 Halt
 ====
-Halt is a node addon that makes it possible for the user to stop the execution of a V8 instance without kill the current loop.
-Timeouts are managed by creating a parallel event loop who's sole objective is to manage the timer.
+Halt is a node addon that makes it possible for the user to stop the execution of a V8 instance without kill the current loop.<br/>
+Timeouts are managed by creating a parallel event loop who's sole objective is to manage the timer.<br/>
 When a program is bottlenecked by the CPU, you may want to kill this event and that is the reason why we throw a nice CPU bound Exception on timeout
 
 
