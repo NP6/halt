@@ -43,18 +43,18 @@ example :
 myMilk = goFetchSomeMilk(){
     halt.start(50);
     /*...*/;
-   halt.stop();
+    halt.stop();
 }
 
 try{
-halt.Start(50);
-try{
-halt.protect(myMilk);
-}
+    halt.Start(50);
+    try{
+        halt.protect(myMilk);
+    }
 catch(){
-/* What ever you want */
+    /* What ever you want */
 }
-halt.clear();
+    halt.clear();
 }
 
 
