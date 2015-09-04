@@ -51,9 +51,9 @@ try{
     try{
         halt.protect(myMilk);
     }
-catch(){
-    /* What ever you want */
-}
+    catch(){
+        /* What ever you want */
+    }
     halt.clear();
 }
 
