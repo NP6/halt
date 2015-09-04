@@ -41,9 +41,9 @@ halt.protect(goFetchSomeMilk);
 example : 
 ```javascript
 myMilk = goFetchSomeMilk(){
-halt.start(50);
-/*...*/;
-halt.stop();
+    halt.start(50);
+    /*...*/;
+   halt.stop();
 }
 
 try{
