@@ -32,7 +32,7 @@ goFetchSomeMilk();
 halt.clear();
 ```
 
-Version 2 (à venir)
+Version 2 (coming soon)
 -------
 In case you have sensible code and you want to recover the exception and catch it, you can use
 ```javascript
