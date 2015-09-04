@@ -21,13 +21,21 @@ var halt = require('halt')
 
 function goFetchSomeMilk () { /* ... */; return milk; }
 
-// Automatic managing
-goFetchSomeMilk.protect(1000 * 60 * 10) // If the we have not received milk within ten minutes, stop waiting
+// If the we have not received milk within ten minutes, stop waiting
 
+// Automatic managing
+goFetchSomeMilk.run(1000 * 60 * 10)
+ 
 // Manually managing
-halt.resetTrip(1000 * 60 * 10);
+halt.start(1000 * 60 * 10);
 goFetchSomeMilk();
-halt.clearTrip();
+halt.clear();
+```
+
+In case you have sensible code that needs to recover -- IL faudrait preciser ca -- 
+you can use
+```javascript
+halt.protect(goFetchSomeMilk);
 ```
 
 License
