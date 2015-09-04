@@ -42,6 +42,7 @@ halt.protect(goFetchSomeMilk);
 Example : 
 ```javascript
 var halt = require('halt')
+
 myMilk = goFetchSomeMilk(){
     halt.start(50);
     /*...*/;
@@ -58,8 +59,6 @@ try{
     }
     halt.clear();
 }
-
-
 ```
 
 License
