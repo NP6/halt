@@ -1,0 +1,32 @@
+{
+	"name": "halt",
+	"version": "1.0.12",
+	"description": "node.js addon used for safely teminating javascript execution",
+	"engines" : { "node" : ">=3.0" },
+	"main": "lib/halt.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": {
+		"name": "larwin <larwin@gmail.com>",
+		"twitter": "morteplaine"
+	},
+	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/np6/halt"
+	},
+	"keywords": [
+		"event loop",
+		"timer",
+		"timeout",
+		"hang",
+		"halt",
+		"TerminateExecution",
+		"libuv",
+		"thread"
+	],
+	"scripts": {
+		"install": "node install.js"
+	}
+}
