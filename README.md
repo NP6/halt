@@ -11,6 +11,11 @@ Installation
 npm install halt
 ```
 
+Compatibility
+------
+From node 0.12
+iojs 3
+
 Usage
 -----
 You can either kill the javascript executing thread by 
