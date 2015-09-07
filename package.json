@@ -1,8 +1,8 @@
 {
 	"name": "halt",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"description": "node.js addon used for safely teminating javascript execution",
-	"engines" : { "node" : ">=3.0" },
+	"engines" : { "node" : ">=0.12" },
 	"main": "lib/halt.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
