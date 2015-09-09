@@ -1,36 +1,18 @@
-#include "watcher.h"
-
+﻿#include "watcher.h"
+#include "helper.h"
 
 	Watcher::Watcher(Isolate* isolate) : isolate_(isolate), status(IDLE) {
 
 		int result;
-
 		locker = new uv_mutex_t;
-		CHECK(locker);
-
 		result = uv_mutex_init(locker);
-		CHECK_EQ(0, result);
-
 		loop = new uv_loop_t;
-		CHECK(loop);
-
 		result = uv_loop_init(loop);
-		CHECK_EQ(0, result);
-
 		result = uv_async_init(loop, &launcher, &Watcher::Launch);
-		CHECK_EQ(0, result);
-
 		result = uv_timer_init(loop, &idleTimer);
-		CHECK_EQ(0, result);
-
 		result = uv_timer_start(&idleTimer, [](uv_timer_t*){}, 0, UINT_MAX);
-		CHECK_EQ(0, result);
-
 		result = uv_timer_init(loop, &timeoutTimer);
-		CHECK_EQ(0, result);
-
 		result = uv_thread_create(&thread, &Watcher::Run, this);
-		CHECK_EQ(0, result);
 
 	}
 
@@ -68,7 +50,7 @@
 	}
 	void Watcher::Launch(uv_async_t* async) {
 
-		Watcher* w = node::ContainerOf(&Watcher::launcher, async);
+		Watcher* w = ContainerOf(&Watcher::launcher, async);
 		uint64_t timeout = (uint64_t)async->data;
 
 		// critical section
@@ -80,7 +62,7 @@
 		uv_mutex_unlock(w->locker);
 	}
 	void Watcher::Timeout(uv_timer_t* timer) {
-		Watcher* w = node::ContainerOf(&Watcher::timeoutTimer, timer);
+		Watcher* w = ContainerOf(&Watcher::timeoutTimer, timer);
 
 		// critical section
 		uv_mutex_lock(w->locker);

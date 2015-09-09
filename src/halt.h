@@ -1,7 +1,7 @@
-#ifndef HALT_H
+﻿#ifndef HALT_H
 #define HALT_H
 
-	#include "Watcher.h"
+	#include "watcher.h"
 	#include <node.h>
 	#include <v8.h>
 

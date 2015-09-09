@@ -1,10 +1,9 @@
-#ifndef WATCHER_H
-#define WATCHER_H
+﻿#ifndef WATCHER_HALT_H
+#define WATCHER_HALT_H
 
 #include <node.h>
 #include <uv.h>
 #include <v8.h>
-#include <util-inl.h>
 
 using namespace v8;
 
