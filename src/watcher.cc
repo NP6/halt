@@ -10,7 +10,7 @@
 		result = uv_loop_init(loop);
 		result = uv_async_init(loop, &launcher, &Watcher::Launch);
 		result = uv_timer_init(loop, &idleTimer);
-		result = uv_timer_start(&idleTimer, [](uv_timer_t*){}, 0, UINT_MAX);
+		result = uv_timer_start(&idleTimer, [](uv_timer_t*){}, 0, 65535);
 		result = uv_timer_init(loop, &timeoutTimer);
 		result = uv_thread_create(&thread, &Watcher::Run, this);
 
