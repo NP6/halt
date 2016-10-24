@@ -13,7 +13,7 @@ npm install halt
 
 Compatibility
 ------
-From node 0.12 - node 4 included<br/>
+From node 0.12 - node 7 included<br/>
 iojs 3
 
 Usage

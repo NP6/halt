@@ -1,6 +1,6 @@
 {
 	"name": "halt",
-	"version": "1.0.19",
+	"version": "1.0.20",
 	"description": "node.js addon used for safely teminating javascript execution",
 	"engines" : { "node" : ">=0.12" },
 	"main": "lib/halt.js",
