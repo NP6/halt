@@ -5,6 +5,8 @@
 #include <uv.h>
 #include <v8.h>
 
+#define MICROS_PER_SEC 1000000
+
 using namespace v8;
 
 class Watcher
@@ -21,9 +23,17 @@ public:
 	};
 
 	Watcher(Isolate* isolate);
-	void Start(uint64_t timeout);
-	Watcher::STATUS Clear();
 
+	void Start(uint64_t timeout);
+	Watcher::STATUS	Clear();
+
+	void Ticks(uint64_t newTicksPerMsec);
+	int Ticks();
+	static void setTicks(Local<String> property,
+						Local<Value> value,
+						const PropertyCallbackInfo<void>& info);
+	static void getTicks(Local<String> property,
+						const PropertyCallbackInfo<Value>& info);
 
 private:
 	Isolate* isolate_;
@@ -37,6 +47,9 @@ private:
 	STATUS status;
 	uint64_t timeout;
 
+	uint64_t clock_start;
+	uint64_t consume;
+	uint64_t maxCpuTicks;
 
 	~Watcher(){
 		delete locker;
@@ -50,8 +63,8 @@ private:
 	static void Launch(uv_async_t* async);
 	static void Timeout(uv_timer_t* timer);
 
+	uint64_t getUserCpuTime();
+	int ticksPerMsec;
 
 };
-
-
 #endif

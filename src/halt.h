@@ -6,7 +6,7 @@
 	#include <v8.h>
 
 	Watcher* watcher;
-
+	
 	void Start(const FunctionCallbackInfo<Value>& args);
 	void Clear(const FunctionCallbackInfo<Value>& args);
 	void Protect(const FunctionCallbackInfo<Value>& args);
