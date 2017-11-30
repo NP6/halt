@@ -1,133 +1,87 @@
-﻿#include "watcher.h"
-#include "helper.h"
+#include "watcher.h"
 
-Watcher::Watcher(Isolate* isolate) : isolate_(isolate), status(IDLE), ticksPerMsec(1000) {
+Isolate* Watcher::isolate;
 
-	int result;
-	locker = new uv_mutex_t;
-	result = uv_mutex_init(locker);
-	loop = new uv_loop_t;
+uv_thread_t Watcher::thread;
+uv_loop_t* Watcher::loop;
+uv_timer_t Watcher::timer;
+uv_mutex_t* Watcher::locker;
+uint64_t Watcher::counter;
+uint64_t Watcher::timeout;
 
-	consume = 0;
-	clock_start = 0;
+uint64_t lastCounter;
+uint64_t lastTimeout;
 
-	result = uv_loop_init(loop);
 
-	result = uv_async_init(loop, &launcher, &Watcher::Launch);
+void Watcher::Initialize() {
 
-	result = uv_timer_init(loop, &idleTimer);
-	result = uv_timer_start(&idleTimer, [](uv_timer_t*) {}, 0, 65535);
+    Watcher::isolate = Isolate::GetCurrent();
 
-	result = uv_timer_init(loop, &timeoutTimer);
-	result = uv_thread_create(&thread, &Watcher::Run, this);
+    Watcher::locker = new uv_mutex_t;
+    uv_mutex_init(locker);
+
+    Watcher::loop = new uv_loop_t;
+    uv_loop_init(Watcher::loop);
+    uv_timer_init(Watcher::loop, &Watcher::timer);
+    uv_timer_start(&Watcher::timer, &Watcher::Tick, 0, 20);
+    uv_thread_create(&Watcher::thread, &Watcher::Run, nullptr);
+    
+}
+void Watcher::Increment() {
+    uv_mutex_lock(Watcher::locker);
+    Watcher::counter += 1;
+    uv_mutex_unlock(Watcher::locker);
+}
+void Watcher::Start(uint64_t timeout) {
+    uv_mutex_lock(Watcher::locker);
+    Watcher::counter += 1;
+    Watcher::timeout = timeout;
+    uv_mutex_unlock(Watcher::locker);
+}
+void Watcher::Stop() {
+    uv_mutex_lock(Watcher::locker);
+    Watcher::counter += 1;
+    Watcher::timeout = 0;
+    uv_mutex_unlock(Watcher::locker);
 }
 
-	void Watcher::Start(uint64_t timeout){
-		uv_mutex_lock(locker);
-		clock_start = getUserCpuTime();
-		start(timeout);
-		uv_mutex_unlock(locker);
-	}
-	Watcher::STATUS Watcher::Clear(){
-		uv_mutex_lock(locker);
-		status = clear();
-		uv_mutex_unlock(locker);
-		return status;
-	}
-	void Watcher::start(uint64_t timeout){
-		if (status == STARTED || status == RUNNING){ clear(); }
-		status = STARTED;
-		Watcher::timeout = timeout;
-		maxCpuTicks = timeout * ticksPerMsec;
-		launcher.data = (void*)timeout;
-		uv_async_send(&launcher);
-	}
-	Watcher::STATUS Watcher::clear(){
-		Watcher::STATUS current = status;
-		status = IDLE;
-		uv_timer_stop(&timeoutTimer);
-		return current;
-	}
+void Watcher::Run(void* arg) {
+    uv_run(Watcher::loop, UV_RUN_DEFAULT);
+}
+void Watcher::Tick(uv_timer_t* timer) {
 
-	void Watcher::Run(void* arg) {
-		Watcher* wd = static_cast<Watcher*>(arg);
-		uv_run(wd->loop, UV_RUN_DEFAULT);
-	}
-	void Watcher::Launch(uv_async_t* async) {
-		Watcher* w = ContainerOf(&Watcher::launcher, async);
-		uint64_t timeout = (uint64_t)async->data;
+    // is there a timeout ?
+    uint64_t timeout = Watcher::timeout;
+    if (timeout == 0){ return; }
 
-		// critical section
-		uv_mutex_lock(w->locker);
-		if (w->status == STARTED){
-			w->status = RUNNING;
-			// launch Timeout after timeout ms. If the execution is not terminated, Timeout will be called again after 5% timeout ms
-			uv_timer_start(&w->timeoutTimer, &Watcher::Timeout, timeout, timeout / 20 + 5);
-		}
-		uv_mutex_unlock(w->locker);
-	}
-	void Watcher::Timeout(uv_timer_t* timer) {
-		Watcher* w = ContainerOf(&Watcher::timeoutTimer, timer);
-		
-		// critical section
-		uv_mutex_lock(w->locker);
-		if (w->status == RUNNING) {
-			uint64_t now = w->getUserCpuTime();
-			w->consume = now - w->clock_start + 5000;   // add 5000 user cpu tick
-			// Check if the engine consumed the max amount of cpu ticks allowed and if it did, then terminate execution
-			if (now == 0 || w->consume >= w->maxCpuTicks) {
-				w->status = TERMINATED;
-				V8::TerminateExecution(w->isolate_);
-			}
-		}
-		uv_mutex_unlock(w->locker);
-	}
+    // get underlying user cpu usage
+    uv_rusage_t rusage;
+    uv_getrusage(&rusage);
+    uv_timeval_t utime = rusage.ru_utime;
+    uint64_t uticks = TICKS_PER_SEC * utime.tv_sec + utime.tv_usec;
 
-	// return userCpuTime in milliseconds, 0 if err
-	uint64_t Watcher::getUserCpuTime() {
-		uv_rusage_t rusage;
+    uv_mutex_lock(Watcher::locker);
 
-		int err = uv_getrusage(&rusage);
-		if (err)
-			return 0;
-		return  (MICROS_PER_SEC * rusage.ru_utime.tv_sec + rusage.ru_utime.tv_usec);
-	}
+    // ensure timeout in the critical section
+    timeout = Watcher::timeout;
+    if (timeout != 0){ 
 
-	void Watcher::Ticks(uint64_t newTicksPerMsec) {
-		// Block when watcher is not idle
-		uv_mutex_lock(locker);
-		if (status == IDLE)
-			ticksPerMsec = newTicksPerMsec;
-		uv_mutex_unlock(locker);
-	}
+        uint64_t counter = Watcher::counter;
 
-	int Watcher::Ticks() {
-		return ticksPerMsec;
-	}
+        if (counter != lastCounter){
+            lastCounter = counter;
+            lastTimeout = uticks + (timeout * TICKS_PER_SEC / 1000);
+        }
+        else {
+            if (uticks > lastTimeout){
+                Watcher::counter += 1;
+                Watcher::timeout = 0;
+                Watcher::isolate->TerminateExecution();
+            }
+        }
 
-	/*
-	* Accessors to watcher's tickPerMsec variable, works by sending an object which internalFields contains a pointer on watcher
-	*/
-	void Watcher::setTicks(Local<String> property,
-							Local<Value> value,
-							const PropertyCallbackInfo<void>& info) {
-		// get the pointer on watcher to access method ticks
-		Isolate *isolate = Isolate::GetCurrent();
-		Local<Object> obj = Local<Object>::Cast(info.Data());
-		Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
-		void* ptr = wrap->Value();
-		
-		int newValue = value->Int32Value();
-		static_cast<Watcher*>(ptr)->Ticks(newValue);
-	}
+    }
 
-	void Watcher::getTicks(Local<String> property,
-							const PropertyCallbackInfo<Value>& info) {
-		Isolate *isolate = Isolate::GetCurrent();
-		Local<Object> obj = Local<Object>::Cast(info.Data());
-		Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
-		void* ptr = wrap->Value();
+    uv_mutex_unlock(Watcher::locker);
 
-		int value = static_cast<Watcher*>(ptr)->Ticks();
-		info.GetReturnValue().Set(value);
-	}
+}
