@@ -44,8 +44,21 @@ void Monitor::Unhook(const FunctionCallbackInfo<Value>& args){
 
 Local<Value> Monitor::Executor(Local<Promise> promise, Local<Value> resolve, Local<Value> reject) {  
 
-    if (promise->CreationContext() == context->Get(isolate)){  return Undefined(isolate); }
-    Local<Value> argv[3] = { promise, resolve, reject };
-    return callback->Get(isolate)->Call(Undefined(isolate), 3, argv);
+    Local<Context> safe = context->Get(isolate);
+    if (promise->CreationContext() == safe){ return Undefined(isolate); }
+
+    bool hasCallableResolve = resolve->IsFunction();
+    if (hasCallableResolve && Local<Function>::Cast(resolve)->CreationContext() == safe){ return Undefined(isolate); }
+
+    bool hasCallableReject = reject->IsFunction();
+    if (hasCallableReject && Local<Function>::Cast(reject)->CreationContext() == safe){ return Undefined(isolate); }
+
+    if (hasCallableResolve || hasCallableReject){
+        Local<Value> argv[3] = { promise, resolve, reject };
+        return callback->Get(isolate)->Call(Undefined(isolate), 3, argv);
+    }
+    else {
+        return Undefined(isolate);
+    }
 
 }
